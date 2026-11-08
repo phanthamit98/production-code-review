@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: review-nextjs-shop
+context:
+  scaffold_script: place-files.sh
+expected_outcome: |
+  A review report of the shop-admin Next.js app that finds the 13 planted issues (SQL injection, IDOR on DELETE, unauthenticated mass-assignment Server Action, stored XSS, useEffect loop, NEXT_PUBLIC secret key, swallowed webhook error, unverified webhook signature, password hash exposure, any type, client-trusted prices, business logic in route handler, N+1 query) without flagging the 4 safe decoys as vulnerabilities, in a structured format with locations, severities, fixes and a verdict.

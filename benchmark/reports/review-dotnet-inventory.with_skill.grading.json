@@ -1,0 +1,122 @@
+{
+  "expectations": [
+    {
+      "text": "Identifies that Program.cs calls UseAuthorization() before UseAuthentication()",
+      "passed": true,
+      "evidence": "#4 High Program.cs:37-38 'UseAuthorization() runs before UseAuthentication()'"
+    },
+    {
+      "text": "Identifies the JWT signing key hardcoded in Program.cs as a secret in source code",
+      "passed": true,
+      "evidence": "#3 Critical Program.cs:24-25 'JWT signing key is hardcoded in source'"
+    },
+    {
+      "text": "Identifies SQL injection in ProductsController.Search caused by interpolating term into FromSqlRaw",
+      "passed": true,
+      "evidence": "#1 Critical ProductsController.cs:14-19 SQL injection through FromSqlRaw with interpolated term"
+    },
+    {
+      "text": "Identifies that Restock in ProductsController contains business rules (perishable cap, discount pricing) and/or uses DbContext directly, which should be moved to a service layer",
+      "passed": true,
+      "evidence": "#12 'Restock business rules live in the controller'; fix 'Move the logic into an IProductService'"
+    },
+    {
+      "text": "Identifies that OrdersController.Get returns any order by id without checking it belongs to the current user (IDOR)",
+      "passed": true,
+      "evidence": "#6 High 'IDOR: any user can read any order', GetByIdAsync filters only by Id"
+    },
+    {
+      "text": "Identifies blocking on async code with .Result in OrdersController.Mine",
+      "passed": true,
+      "evidence": "#10 Medium '.Result blocks a thread-pool thread in GET /api/orders/mine'"
+    },
+    {
+      "text": "Identifies that UsersController.Update binds the User entity directly, allowing over-posting of fields such as IsAdmin or PasswordHash (and/or lets any user update any other user)",
+      "passed": true,
+      "evidence": "#2 Critical binds User entity: IsAdmin/PasswordHash over-posting, no ownership check"
+    },
+    {
+      "text": "Identifies that UsersController.Get returns the User entity including PasswordHash",
+      "passed": true,
+      "evidence": "#5 High 'GET /api/users/{id} returns any user's PasswordHash and IsAdmin'"
+    },
+    {
+      "text": "Identifies the empty catch around SaveChangesAsync in OrderService.CancelAsync that swallows failures and still returns true",
+      "passed": true,
+      "evidence": "#8 Medium 'SaveChangesAsync failure is swallowed and the endpoint returns 204'"
+    },
+    {
+      "text": "Identifies the async void method NotifyCancellation in OrderService",
+      "passed": true,
+      "evidence": "#9 Medium 'async void NotifyCancellation'"
+    },
+    {
+      "text": "Identifies that OrderService.GetForUserAsync loads all orders with ToListAsync and filters in memory",
+      "passed": true,
+      "evidence": "#11 Medium 'GetForUserAsync loads the whole Orders table and filters in memory'"
+    },
+    {
+      "text": "Identifies creating a new HttpClient per call in ReportService (should use IHttpClientFactory)",
+      "passed": true,
+      "evidence": "#13 Medium 'new HttpClient() per call', fix typed client via IHttpClientFactory"
+    },
+    {
+      "text": "Does NOT report FromSqlInterpolated in ProductsController.ByCategory as SQL injection",
+      "passed": true,
+      "evidence": "Praised: 'ByCategory uses FromSqlInterpolated, which is correctly parameterized'"
+    },
+    {
+      "text": "Does NOT report the LINQ Where(p => p.Name.Contains(name)) in ProductsController.List as SQL injection",
+      "passed": true,
+      "evidence": "Praised List's LINQ filter; its own Search fix uses Contains"
+    },
+    {
+      "text": "Does NOT report any controller action as unauthenticated / missing [Authorize] when the controller has class-level [Authorize]",
+      "passed": true,
+      "evidence": "#7 is a role/policy gap, explicitly acknowledging class-level [Authorize]; praises class-level [Authorize]"
+    },
+    {
+      "text": "Does NOT report RestockRequest.Quantity as unvalidated (it has a [Range] attribute with [ApiController] automatic validation)",
+      "passed": true,
+      "evidence": "Praised: 'RestockRequest uses [Range] with [ApiController], so invalid quantities get an automatic 400'"
+    },
+    {
+      "text": "Every finding in code-review-report.md cites a file path with a line number or line range",
+      "passed": false,
+      "evidence": "Finding #15 Location is 'several (listed below)'; some bullets (CancellationToken, Order entity DTO, decimal precision) have no file:line"
+    },
+    {
+      "text": "Every finding in code-review-report.md is assigned an explicit severity level (Critical/High/Medium/Low or equivalent)",
+      "passed": true,
+      "evidence": "All 15 findings have explicit Severity"
+    },
+    {
+      "text": "Every finding rated Critical or High in code-review-report.md includes a concrete code fix, not only a prose suggestion",
+      "passed": true,
+      "evidence": "All Critical (#1-3) and High (#4-7) include code blocks with concrete fixes"
+    },
+    {
+      "text": "code-review-report.md ends with or contains an explicit merge/deploy verdict (e.g. Block, Approve with changes, Approve)",
+      "passed": true,
+      "evidence": "'Verdict: Block'"
+    }
+  ],
+  "summary": {
+    "passed": 19,
+    "failed": 1,
+    "total": 20,
+    "pass_rate": 0.95
+  },
+  "line_accuracy": {
+    "correct": 15,
+    "total": 15
+  },
+  "extra_false_positives": [],
+  "findings_total": 15,
+  "severity_counts": {
+    "Critical": 3,
+    "High": 4,
+    "Medium": 6,
+    "Low": 2
+  }
+}

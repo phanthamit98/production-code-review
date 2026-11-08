@@ -1,0 +1,557 @@
+{
+  "metadata": {
+    "skill_name": "production-code-review",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "claude-opus-5-5",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-11-08T20:32:46Z",
+    "evals_run": [
+      "review-dotnet-inventory",
+      "review-nextjs-shop"
+    ],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": "review-dotnet-inventory",
+      "eval_name": "review-dotnet-inventory",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.95,
+        "passed": 19,
+        "failed": 1,
+        "total": 20,
+        "time_seconds": 134.2,
+        "tokens": 92308,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Identifies that Program.cs calls UseAuthorization() before UseAuthentication()",
+          "passed": true,
+          "evidence": "#4 High Program.cs:37-38 'UseAuthorization() runs before UseAuthentication()'"
+        },
+        {
+          "text": "Identifies the JWT signing key hardcoded in Program.cs as a secret in source code",
+          "passed": true,
+          "evidence": "#3 Critical Program.cs:24-25 'JWT signing key is hardcoded in source'"
+        },
+        {
+          "text": "Identifies SQL injection in ProductsController.Search caused by interpolating term into FromSqlRaw",
+          "passed": true,
+          "evidence": "#1 Critical ProductsController.cs:14-19 SQL injection through FromSqlRaw with interpolated term"
+        },
+        {
+          "text": "Identifies that Restock in ProductsController contains business rules (perishable cap, discount pricing) and/or uses DbContext directly, which should be moved to a service layer",
+          "passed": true,
+          "evidence": "#12 'Restock business rules live in the controller'; fix 'Move the logic into an IProductService'"
+        },
+        {
+          "text": "Identifies that OrdersController.Get returns any order by id without checking it belongs to the current user (IDOR)",
+          "passed": true,
+          "evidence": "#6 High 'IDOR: any user can read any order', GetByIdAsync filters only by Id"
+        },
+        {
+          "text": "Identifies blocking on async code with .Result in OrdersController.Mine",
+          "passed": true,
+          "evidence": "#10 Medium '.Result blocks a thread-pool thread in GET /api/orders/mine'"
+        },
+        {
+          "text": "Identifies that UsersController.Update binds the User entity directly, allowing over-posting of fields such as IsAdmin or PasswordHash (and/or lets any user update any other user)",
+          "passed": true,
+          "evidence": "#2 Critical binds User entity: IsAdmin/PasswordHash over-posting, no ownership check"
+        },
+        {
+          "text": "Identifies that UsersController.Get returns the User entity including PasswordHash",
+          "passed": true,
+          "evidence": "#5 High 'GET /api/users/{id} returns any user's PasswordHash and IsAdmin'"
+        },
+        {
+          "text": "Identifies the empty catch around SaveChangesAsync in OrderService.CancelAsync that swallows failures and still returns true",
+          "passed": true,
+          "evidence": "#8 Medium 'SaveChangesAsync failure is swallowed and the endpoint returns 204'"
+        },
+        {
+          "text": "Identifies the async void method NotifyCancellation in OrderService",
+          "passed": true,
+          "evidence": "#9 Medium 'async void NotifyCancellation'"
+        },
+        {
+          "text": "Identifies that OrderService.GetForUserAsync loads all orders with ToListAsync and filters in memory",
+          "passed": true,
+          "evidence": "#11 Medium 'GetForUserAsync loads the whole Orders table and filters in memory'"
+        },
+        {
+          "text": "Identifies creating a new HttpClient per call in ReportService (should use IHttpClientFactory)",
+          "passed": true,
+          "evidence": "#13 Medium 'new HttpClient() per call', fix typed client via IHttpClientFactory"
+        },
+        {
+          "text": "Does NOT report FromSqlInterpolated in ProductsController.ByCategory as SQL injection",
+          "passed": true,
+          "evidence": "Praised: 'ByCategory uses FromSqlInterpolated, which is correctly parameterized'"
+        },
+        {
+          "text": "Does NOT report the LINQ Where(p => p.Name.Contains(name)) in ProductsController.List as SQL injection",
+          "passed": true,
+          "evidence": "Praised List's LINQ filter; its own Search fix uses Contains"
+        },
+        {
+          "text": "Does NOT report any controller action as unauthenticated / missing [Authorize] when the controller has class-level [Authorize]",
+          "passed": true,
+          "evidence": "#7 is a role/policy gap, explicitly acknowledging class-level [Authorize]; praises class-level [Authorize]"
+        },
+        {
+          "text": "Does NOT report RestockRequest.Quantity as unvalidated (it has a [Range] attribute with [ApiController] automatic validation)",
+          "passed": true,
+          "evidence": "Praised: 'RestockRequest uses [Range] with [ApiController], so invalid quantities get an automatic 400'"
+        },
+        {
+          "text": "Every finding in code-review-report.md cites a file path with a line number or line range",
+          "passed": false,
+          "evidence": "Finding #15 Location is 'several (listed below)'; some bullets (CancellationToken, Order entity DTO, decimal precision) have no file:line"
+        },
+        {
+          "text": "Every finding in code-review-report.md is assigned an explicit severity level (Critical/High/Medium/Low or equivalent)",
+          "passed": true,
+          "evidence": "All 15 findings have explicit Severity"
+        },
+        {
+          "text": "Every finding rated Critical or High in code-review-report.md includes a concrete code fix, not only a prose suggestion",
+          "passed": true,
+          "evidence": "All Critical (#1-3) and High (#4-7) include code blocks with concrete fixes"
+        },
+        {
+          "text": "code-review-report.md ends with or contains an explicit merge/deploy verdict (e.g. Block, Approve with changes, Approve)",
+          "passed": true,
+          "evidence": "'Verdict: Block'"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "review-nextjs-shop",
+      "eval_name": "review-nextjs-shop",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 21,
+        "failed": 0,
+        "total": 21,
+        "time_seconds": 131.5,
+        "tokens": 94868,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Identifies SQL injection in app/api/orders/route.ts caused by interpolating the status query parameter into $queryRawUnsafe",
+          "passed": true,
+          "evidence": "#1 Critical app/api/orders/route.ts:11-15 SQL injection via status in $queryRawUnsafe"
+        },
+        {
+          "text": "Identifies that DELETE in app/api/orders/[id]/route.ts deletes any order by id without checking it belongs to the current user (IDOR / missing ownership check)",
+          "passed": true,
+          "evidence": "#6 High 'IDOR: delete other users' orders', where: { id } without userId"
+        },
+        {
+          "text": "Identifies that updateProfile in app/actions/profile.ts lacks authentication/authorization (trusts userId argument) and/or spreads formData into the update allowing fields like role to be set (mass assignment)",
+          "passed": true,
+          "evidence": "#2 Critical updateProfile no auth, trusts client userId, mass assignment (role)"
+        },
+        {
+          "text": "Identifies stored XSS risk from dangerouslySetInnerHTML with product.description in app/products/[slug]/page.tsx",
+          "passed": true,
+          "evidence": "#7 High Stored XSS via dangerouslySetInnerHTML with product.description"
+        },
+        {
+          "text": "Identifies that useEffect in app/dashboard/page.tsx has no dependency array, causing it to refetch on every render (infinite loop / request storm)",
+          "passed": true,
+          "evidence": "#9 High useEffect without dependency array causes endless fetch"
+        },
+        {
+          "text": "Identifies that lib/config.ts reads the Stripe secret key from a NEXT_PUBLIC_ variable and/or that it is imported into a client component, exposing the secret to the browser",
+          "passed": true,
+          "evidence": "#3 Critical NEXT_PUBLIC_ secret key imported into client component"
+        },
+        {
+          "text": "Identifies that the empty catch in app/api/webhooks/stripe/route.ts swallows errors and still returns success",
+          "passed": true,
+          "evidence": "#4 'empty catch (err) {} then responds 200 { received: true } in every case'"
+        },
+        {
+          "text": "Identifies that the Stripe webhook handler does not verify the webhook signature before trusting the event",
+          "passed": true,
+          "evidence": "#4 Critical 'Webhook does not verify signature', fix with constructEvent"
+        },
+        {
+          "text": "Identifies that app/api/users/route.ts returns full user records (e.g. password hashes / sensitive fields) instead of selecting safe fields",
+          "passed": true,
+          "evidence": "#8 High returns whole User entity incl. password hash, fix with select"
+        },
+        {
+          "text": "Mentions the use of the any type in app/api/users/route.ts as a type-safety issue",
+          "passed": true,
+          "evidence": "#13 Type safety: 'app/api/users/route.ts:12 \u2014 (u: any) unnecessary'"
+        },
+        {
+          "text": "Identifies that app/api/checkout/route.ts uses the client-supplied item price instead of the product price from the database",
+          "passed": true,
+          "evidence": "#5 High subtotal from client item.price (line 24) and unitPrice (line 37) instead of DB price"
+        },
+        {
+          "text": "Identifies that pricing/shipping/VAT business logic lives inside the checkout route handler and should be moved to a service/domain layer",
+          "passed": true,
+          "evidence": "#11 Medium 'Business logic (price, shipping, VAT) in route handler', move to lib/services/pricing.ts"
+        },
+        {
+          "text": "Identifies the N+1 query pattern (findUnique inside a loop) in app/api/checkout/route.ts",
+          "passed": true,
+          "evidence": "#10 Medium 'N+1 query' findUnique per item in loop"
+        },
+        {
+          "text": "Does NOT report rendering {review.body} as JSX text in the product page as an XSS vulnerability",
+          "passed": true,
+          "evidence": "Explicitly: review.body rendered as JSX text is escaped by React, not a problem"
+        },
+        {
+          "text": "Does NOT report the $queryRaw tagged template in app/api/reviews/route.ts as SQL injection",
+          "passed": true,
+          "evidence": "Praised: '$queryRaw tagged template (parameterized)'"
+        },
+        {
+          "text": "Does NOT report process.env.STRIPE_SECRET_KEY used in the server-side app/api/reviews/route.ts as a secret exposed to the client",
+          "passed": true,
+          "evidence": "Says reviews/route.ts using process.env.STRIPE_SECRET_KEY is correct"
+        },
+        {
+          "text": "Does NOT report createReview in app/actions/review.ts as missing authentication or input validation",
+          "passed": true,
+          "evidence": "createReview praised as good pattern; #12 is only revalidatePath path mismatch"
+        },
+        {
+          "text": "Every finding in code-review-report.md cites a file path with a line number or line range",
+          "passed": true,
+          "evidence": "All 13 findings cite file:line (#13 lists lib/auth.ts:8, users/route.ts:12, orders/route.ts:13-15, reviews/route.ts:6,23-24)"
+        },
+        {
+          "text": "Every finding in code-review-report.md is assigned an explicit severity level (Critical/High/Medium/Low or equivalent)",
+          "passed": true,
+          "evidence": "All 13 findings have explicit Severity"
+        },
+        {
+          "text": "Every finding rated Critical or High in code-review-report.md includes a concrete code fix, not only a prose suggestion",
+          "passed": true,
+          "evidence": "All Critical (#1-4) and High (#5-9) include code blocks with concrete fixes"
+        },
+        {
+          "text": "code-review-report.md ends with or contains an explicit merge/deploy verdict (e.g. Block, Approve with changes, Approve)",
+          "passed": true,
+          "evidence": "'Verdict: Block'"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "review-dotnet-inventory",
+      "eval_name": "review-dotnet-inventory",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.85,
+        "passed": 17,
+        "failed": 3,
+        "total": 20,
+        "time_seconds": 97.4,
+        "tokens": 82795,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Identifies that Program.cs calls UseAuthorization() before UseAuthentication()",
+          "passed": true,
+          "evidence": "#5 Critical Program.cs:37-38: 'UseAuthorization runs before UseAuthentication'"
+        },
+        {
+          "text": "Identifies the JWT signing key hardcoded in Program.cs as a secret in source code",
+          "passed": true,
+          "evidence": "#4 Critical Program.cs:24-25 'JWT signing key is hardcoded in source'"
+        },
+        {
+          "text": "Identifies SQL injection in ProductsController.Search caused by interpolating term into FromSqlRaw",
+          "passed": true,
+          "evidence": "#1 Critical ProductsController.cs:18 'SQL injection via FromSqlRaw with string interpolation' of term"
+        },
+        {
+          "text": "Identifies that Restock in ProductsController contains business rules (perishable cap, discount pricing) and/or uses DbContext directly, which should be moved to a service layer",
+          "passed": false,
+          "evidence": "#12 discusses compounding discount and suggests constants/'separate, explicit operation', but never says the restock rules or direct DbContext use belong in a service layer"
+        },
+        {
+          "text": "Identifies that OrdersController.Get returns any order by id without checking it belongs to the current user (IDOR)",
+          "passed": true,
+          "evidence": "#6 High 'IDOR: any user can read any order by ID' (OrdersController.cs:13-18, OrderService GetByIdAsync)"
+        },
+        {
+          "text": "Identifies blocking on async code with .Result in OrdersController.Mine",
+          "passed": true,
+          "evidence": "#10 High 'Sync-over-async .Result' OrdersController.cs:24"
+        },
+        {
+          "text": "Identifies that UsersController.Update binds the User entity directly, allowing over-posting of fields such as IsAdmin or PasswordHash (and/or lets any user update any other user)",
+          "passed": true,
+          "evidence": "#2 Critical: binds full User entity, 'set isAdmin: true ... passwordHash', and any user can edit any account"
+        },
+        {
+          "text": "Identifies that UsersController.Get returns the User entity including PasswordHash",
+          "passed": true,
+          "evidence": "#3 Critical UsersController.cs:13-18 returns raw User 'including PasswordHash'"
+        },
+        {
+          "text": "Identifies the empty catch around SaveChangesAsync in OrderService.CancelAsync that swallows failures and still returns true",
+          "passed": true,
+          "evidence": "#8 High 'Exception swallowed: cancel reports success even when the save failed' OrderService.cs:33-42"
+        },
+        {
+          "text": "Identifies the async void method NotifyCancellation in OrderService",
+          "passed": true,
+          "evidence": "#9 High 'async void fire-and-forget' OrderService.cs:45-49"
+        },
+        {
+          "text": "Identifies that OrderService.GetForUserAsync loads all orders with ToListAsync and filters in memory",
+          "passed": true,
+          "evidence": "#11 High 'Loads the entire Orders table into memory' OrderService.cs:21-24"
+        },
+        {
+          "text": "Identifies creating a new HttpClient per call in ReportService (should use IHttpClientFactory)",
+          "passed": true,
+          "evidence": "#14 Medium 'new HttpClient() per call', fix AddHttpClient (IHttpClientFactory)"
+        },
+        {
+          "text": "Does NOT report FromSqlInterpolated in ProductsController.ByCategory as SQL injection",
+          "passed": true,
+          "evidence": "Explicitly says category endpoint 'uses FromSqlInterpolated correctly and is safe'"
+        },
+        {
+          "text": "Does NOT report the LINQ Where(p => p.Name.Contains(name)) in ProductsController.List as SQL injection",
+          "passed": true,
+          "evidence": "List/Contains only mentioned in #18 as a non-sargable leading-wildcard performance concern, not SQL injection"
+        },
+        {
+          "text": "Does NOT report any controller action as unauthenticated / missing [Authorize] when the controller has class-level [Authorize]",
+          "passed": true,
+          "evidence": "#7 is a missing role check on Restock ('Any authenticated user'), not a missing [Authorize]/unauthenticated claim"
+        },
+        {
+          "text": "Does NOT report RestockRequest.Quantity as unvalidated (it has a [Range] attribute with [ApiController] automatic validation)",
+          "passed": true,
+          "evidence": "No claim that RestockRequest.Quantity is unvalidated"
+        },
+        {
+          "text": "Every finding in code-review-report.md cites a file path with a line number or line range",
+          "passed": false,
+          "evidence": "#19 (Models/Entities.cs, AppDbContext.cs), #20 (Program.cs), #21 (Users/OrdersController) and #22 (various) cite no line numbers"
+        },
+        {
+          "text": "Every finding in code-review-report.md is assigned an explicit severity level (Critical/High/Medium/Low or equivalent)",
+          "passed": true,
+          "evidence": "Every one of 22 findings has an explicit severity in the summary table"
+        },
+        {
+          "text": "Every finding rated Critical or High in code-review-report.md includes a concrete code fix, not only a prose suggestion",
+          "passed": false,
+          "evidence": "Several Critical/High findings have only prose fixes: #2, #3, #4, #6, #8, #9 (no code block or concrete code)"
+        },
+        {
+          "text": "code-review-report.md ends with or contains an explicit merge/deploy verdict (e.g. Block, Approve with changes, Approve)",
+          "passed": true,
+          "evidence": "'Verdict: NOT READY FOR PRODUCTION.'"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "review-nextjs-shop",
+      "eval_name": "review-nextjs-shop",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.857,
+        "passed": 18,
+        "failed": 3,
+        "total": 21,
+        "time_seconds": 113.8,
+        "tokens": 83598,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Identifies SQL injection in app/api/orders/route.ts caused by interpolating the status query parameter into $queryRawUnsafe",
+          "passed": true,
+          "evidence": "C1 Critical app/api/orders/route.ts:11-15 status interpolated into $queryRawUnsafe"
+        },
+        {
+          "text": "Identifies that DELETE in app/api/orders/[id]/route.ts deletes any order by id without checking it belongs to the current user (IDOR / missing ownership check)",
+          "passed": true,
+          "evidence": "C6 Critical DELETE uses where: { id } only, can delete others' orders (IDOR)"
+        },
+        {
+          "text": "Identifies that updateProfile in app/actions/profile.ts lacks authentication/authorization (trusts userId argument) and/or spreads formData into the update allowing fields like role to be set (mass assignment)",
+          "passed": true,
+          "evidence": "C4 Critical updateProfile has no auth, trusts userId argument, spreads formData allowing role=ADMIN"
+        },
+        {
+          "text": "Identifies stored XSS risk from dangerouslySetInnerHTML with product.description in app/products/[slug]/page.tsx",
+          "passed": true,
+          "evidence": "H1 High Stored XSS via dangerouslySetInnerHTML at page.tsx:18"
+        },
+        {
+          "text": "Identifies that useEffect in app/dashboard/page.tsx has no dependency array, causing it to refetch on every render (infinite loop / request storm)",
+          "passed": true,
+          "evidence": "H3 High useEffect has no [] so it refetches every render in an endless loop"
+        },
+        {
+          "text": "Identifies that lib/config.ts reads the Stripe secret key from a NEXT_PUBLIC_ variable and/or that it is imported into a client component, exposing the secret to the browser",
+          "passed": true,
+          "evidence": "C5 Critical NEXT_PUBLIC_STRIPE_SECRET_KEY inlined into client bundle and imported by 'use client' dashboard"
+        },
+        {
+          "text": "Identifies that the empty catch in app/api/webhooks/stripe/route.ts swallows errors and still returns success",
+          "passed": true,
+          "evidence": "C3: 'catch (err) {} swallows all errors and returns 200; Stripe won't retry, no log'"
+        },
+        {
+          "text": "Identifies that the Stripe webhook handler does not verify the webhook signature before trusting the event",
+          "passed": true,
+          "evidence": "C3 Critical 'Stripe webhook does not verify signature', fix with constructEvent"
+        },
+        {
+          "text": "Identifies that app/api/users/route.ts returns full user records (e.g. password hashes / sensitive fields) instead of selecting safe fields",
+          "passed": true,
+          "evidence": "H2 High findMany without select and spread exposes passwordHash etc."
+        },
+        {
+          "text": "Mentions the use of the any type in app/api/users/route.ts as a type-safety issue",
+          "passed": true,
+          "evidence": "H2: 'u: any also prevents TypeScript from catching this'"
+        },
+        {
+          "text": "Identifies that app/api/checkout/route.ts uses the client-supplied item price instead of the product price from the database",
+          "passed": true,
+          "evidence": "C2 Critical subtotal uses item.price from request body instead of product.price from DB"
+        },
+        {
+          "text": "Identifies that pricing/shipping/VAT business logic lives inside the checkout route handler and should be moved to a service/domain layer",
+          "passed": false,
+          "evidence": "M2 only says move 1000/50/0.07 to named constants/config and add unit tests; does not say the pricing/shipping/VAT logic should move out of the route into a service/domain layer"
+        },
+        {
+          "text": "Identifies the N+1 query pattern (findUnique inside a loop) in app/api/checkout/route.ts",
+          "passed": true,
+          "evidence": "M4 Medium 'N+1 query in checkout' checkout/route.ts:19-20, use findMany"
+        },
+        {
+          "text": "Does NOT report rendering {review.body} as JSX text in the product page as an XSS vulnerability",
+          "passed": true,
+          "evidence": "review.body not flagged; no XSS claim on JSX text"
+        },
+        {
+          "text": "Does NOT report the $queryRaw tagged template in app/api/reviews/route.ts as SQL injection",
+          "passed": true,
+          "evidence": "Praised: '$queryRaw tagged template (parameterized)'"
+        },
+        {
+          "text": "Does NOT report process.env.STRIPE_SECRET_KEY used in the server-side app/api/reviews/route.ts as a secret exposed to the client",
+          "passed": true,
+          "evidence": "M6 only suggests relocating server-side new Stripe(process.env.STRIPE_SECRET_KEY!) to lib/stripe.ts; no client-exposure claim"
+        },
+        {
+          "text": "Does NOT report createReview in app/actions/review.ts as missing authentication or input validation",
+          "passed": true,
+          "evidence": "createReview praised for auth+zod; L3/M5 raise duplicate reviews/revalidatePath, not missing auth or input validation"
+        },
+        {
+          "text": "Every finding in code-review-report.md cites a file path with a line number or line range",
+          "passed": false,
+          "evidence": "C3 (webhooks/stripe/route.ts), C4 (profile.ts), C7 (package.json), L3-L6 cite no line numbers"
+        },
+        {
+          "text": "Every finding in code-review-report.md is assigned an explicit severity level (Critical/High/Medium/Low or equivalent)",
+          "passed": true,
+          "evidence": "Every finding sits under a Critical/High/Medium/Low section with an ID"
+        },
+        {
+          "text": "Every finding rated Critical or High in code-review-report.md includes a concrete code fix, not only a prose suggestion",
+          "passed": false,
+          "evidence": "Several Critical/High findings only have prose fixes: C4, C5, C7, H1, H3, H4"
+        },
+        {
+          "text": "code-review-report.md ends with or contains an explicit merge/deploy verdict (e.g. Block, Approve with changes, Approve)",
+          "passed": true,
+          "evidence": "'\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e04\u0e27\u0e23 merge \u0e40\u0e02\u0e49\u0e32 main' (do not merge) plus fix order before merge"
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 0.975,
+        "stddev": 0.0354,
+        "min": 0.95,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 132.85,
+        "stddev": 1.9092,
+        "min": 131.5,
+        "max": 134.2
+      },
+      "tokens": {
+        "mean": 93588.0,
+        "stddev": 1810.1934,
+        "min": 92308,
+        "max": 94868
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.8535,
+        "stddev": 0.0049,
+        "min": 0.85,
+        "max": 0.857
+      },
+      "time_seconds": {
+        "mean": 105.6,
+        "stddev": 11.5966,
+        "min": 97.4,
+        "max": 113.8
+      },
+      "tokens": {
+        "mean": 83196.5,
+        "stddev": 567.8067,
+        "min": 82795,
+        "max": 83598
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.12",
+      "time_seconds": "+27.2",
+      "tokens": "+10392"
+    }
+  },
+  "notes": [
+    "Security detection is non-discriminating: both configurations found all planted security issues and flagged none of the 8 safe decoys.",
+    "The skill's gains come from architecture findings (2/2 vs 0/2), per-finding file:line (1/2 vs 0/2 cases fully compliant), and code fixes for every Critical/High (2/2 vs 0/2).",
+    "With-skill reports are ~40% shorter (13-15 findings vs 22-25) at equal recall; line citations were 100% accurate in all four reports.",
+    "Cost: +12% tokens, +26% wall time, mostly from running detect_stack.py and the verification pass.",
+    "Only failure with skill: a grouped Low finding listed locations as 'several' \u2014 SKILL.md now requires grouped findings to list every file:line.",
+    "1 run per configuration: treat deltas as indicative, not statistically significant."
+  ]
+}

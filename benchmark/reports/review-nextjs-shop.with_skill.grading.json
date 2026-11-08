@@ -1,0 +1,127 @@
+{
+  "expectations": [
+    {
+      "text": "Identifies SQL injection in app/api/orders/route.ts caused by interpolating the status query parameter into $queryRawUnsafe",
+      "passed": true,
+      "evidence": "#1 Critical app/api/orders/route.ts:11-15 SQL injection via status in $queryRawUnsafe"
+    },
+    {
+      "text": "Identifies that DELETE in app/api/orders/[id]/route.ts deletes any order by id without checking it belongs to the current user (IDOR / missing ownership check)",
+      "passed": true,
+      "evidence": "#6 High 'IDOR: delete other users' orders', where: { id } without userId"
+    },
+    {
+      "text": "Identifies that updateProfile in app/actions/profile.ts lacks authentication/authorization (trusts userId argument) and/or spreads formData into the update allowing fields like role to be set (mass assignment)",
+      "passed": true,
+      "evidence": "#2 Critical updateProfile no auth, trusts client userId, mass assignment (role)"
+    },
+    {
+      "text": "Identifies stored XSS risk from dangerouslySetInnerHTML with product.description in app/products/[slug]/page.tsx",
+      "passed": true,
+      "evidence": "#7 High Stored XSS via dangerouslySetInnerHTML with product.description"
+    },
+    {
+      "text": "Identifies that useEffect in app/dashboard/page.tsx has no dependency array, causing it to refetch on every render (infinite loop / request storm)",
+      "passed": true,
+      "evidence": "#9 High useEffect without dependency array causes endless fetch"
+    },
+    {
+      "text": "Identifies that lib/config.ts reads the Stripe secret key from a NEXT_PUBLIC_ variable and/or that it is imported into a client component, exposing the secret to the browser",
+      "passed": true,
+      "evidence": "#3 Critical NEXT_PUBLIC_ secret key imported into client component"
+    },
+    {
+      "text": "Identifies that the empty catch in app/api/webhooks/stripe/route.ts swallows errors and still returns success",
+      "passed": true,
+      "evidence": "#4 'empty catch (err) {} then responds 200 { received: true } in every case'"
+    },
+    {
+      "text": "Identifies that the Stripe webhook handler does not verify the webhook signature before trusting the event",
+      "passed": true,
+      "evidence": "#4 Critical 'Webhook does not verify signature', fix with constructEvent"
+    },
+    {
+      "text": "Identifies that app/api/users/route.ts returns full user records (e.g. password hashes / sensitive fields) instead of selecting safe fields",
+      "passed": true,
+      "evidence": "#8 High returns whole User entity incl. password hash, fix with select"
+    },
+    {
+      "text": "Mentions the use of the any type in app/api/users/route.ts as a type-safety issue",
+      "passed": true,
+      "evidence": "#13 Type safety: 'app/api/users/route.ts:12 — (u: any) unnecessary'"
+    },
+    {
+      "text": "Identifies that app/api/checkout/route.ts uses the client-supplied item price instead of the product price from the database",
+      "passed": true,
+      "evidence": "#5 High subtotal from client item.price (line 24) and unitPrice (line 37) instead of DB price"
+    },
+    {
+      "text": "Identifies that pricing/shipping/VAT business logic lives inside the checkout route handler and should be moved to a service/domain layer",
+      "passed": true,
+      "evidence": "#11 Medium 'Business logic (price, shipping, VAT) in route handler', move to lib/services/pricing.ts"
+    },
+    {
+      "text": "Identifies the N+1 query pattern (findUnique inside a loop) in app/api/checkout/route.ts",
+      "passed": true,
+      "evidence": "#10 Medium 'N+1 query' findUnique per item in loop"
+    },
+    {
+      "text": "Does NOT report rendering {review.body} as JSX text in the product page as an XSS vulnerability",
+      "passed": true,
+      "evidence": "Explicitly: review.body rendered as JSX text is escaped by React, not a problem"
+    },
+    {
+      "text": "Does NOT report the $queryRaw tagged template in app/api/reviews/route.ts as SQL injection",
+      "passed": true,
+      "evidence": "Praised: '$queryRaw tagged template (parameterized)'"
+    },
+    {
+      "text": "Does NOT report process.env.STRIPE_SECRET_KEY used in the server-side app/api/reviews/route.ts as a secret exposed to the client",
+      "passed": true,
+      "evidence": "Says reviews/route.ts using process.env.STRIPE_SECRET_KEY is correct"
+    },
+    {
+      "text": "Does NOT report createReview in app/actions/review.ts as missing authentication or input validation",
+      "passed": true,
+      "evidence": "createReview praised as good pattern; #12 is only revalidatePath path mismatch"
+    },
+    {
+      "text": "Every finding in code-review-report.md cites a file path with a line number or line range",
+      "passed": true,
+      "evidence": "All 13 findings cite file:line (#13 lists lib/auth.ts:8, users/route.ts:12, orders/route.ts:13-15, reviews/route.ts:6,23-24)"
+    },
+    {
+      "text": "Every finding in code-review-report.md is assigned an explicit severity level (Critical/High/Medium/Low or equivalent)",
+      "passed": true,
+      "evidence": "All 13 findings have explicit Severity"
+    },
+    {
+      "text": "Every finding rated Critical or High in code-review-report.md includes a concrete code fix, not only a prose suggestion",
+      "passed": true,
+      "evidence": "All Critical (#1-4) and High (#5-9) include code blocks with concrete fixes"
+    },
+    {
+      "text": "code-review-report.md ends with or contains an explicit merge/deploy verdict (e.g. Block, Approve with changes, Approve)",
+      "passed": true,
+      "evidence": "'Verdict: Block'"
+    }
+  ],
+  "summary": {
+    "passed": 21,
+    "failed": 0,
+    "total": 21,
+    "pass_rate": 1.0
+  },
+  "line_accuracy": {
+    "correct": 13,
+    "total": 13
+  },
+  "extra_false_positives": [],
+  "findings_total": 13,
+  "severity_counts": {
+    "Critical": 4,
+    "High": 5,
+    "Medium": 2,
+    "Low": 2
+  }
+}

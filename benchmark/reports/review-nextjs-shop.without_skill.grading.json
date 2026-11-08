@@ -1,0 +1,127 @@
+{
+  "expectations": [
+    {
+      "text": "Identifies SQL injection in app/api/orders/route.ts caused by interpolating the status query parameter into $queryRawUnsafe",
+      "passed": true,
+      "evidence": "C1 Critical app/api/orders/route.ts:11-15 status interpolated into $queryRawUnsafe"
+    },
+    {
+      "text": "Identifies that DELETE in app/api/orders/[id]/route.ts deletes any order by id without checking it belongs to the current user (IDOR / missing ownership check)",
+      "passed": true,
+      "evidence": "C6 Critical DELETE uses where: { id } only, can delete others' orders (IDOR)"
+    },
+    {
+      "text": "Identifies that updateProfile in app/actions/profile.ts lacks authentication/authorization (trusts userId argument) and/or spreads formData into the update allowing fields like role to be set (mass assignment)",
+      "passed": true,
+      "evidence": "C4 Critical updateProfile has no auth, trusts userId argument, spreads formData allowing role=ADMIN"
+    },
+    {
+      "text": "Identifies stored XSS risk from dangerouslySetInnerHTML with product.description in app/products/[slug]/page.tsx",
+      "passed": true,
+      "evidence": "H1 High Stored XSS via dangerouslySetInnerHTML at page.tsx:18"
+    },
+    {
+      "text": "Identifies that useEffect in app/dashboard/page.tsx has no dependency array, causing it to refetch on every render (infinite loop / request storm)",
+      "passed": true,
+      "evidence": "H3 High useEffect has no [] so it refetches every render in an endless loop"
+    },
+    {
+      "text": "Identifies that lib/config.ts reads the Stripe secret key from a NEXT_PUBLIC_ variable and/or that it is imported into a client component, exposing the secret to the browser",
+      "passed": true,
+      "evidence": "C5 Critical NEXT_PUBLIC_STRIPE_SECRET_KEY inlined into client bundle and imported by 'use client' dashboard"
+    },
+    {
+      "text": "Identifies that the empty catch in app/api/webhooks/stripe/route.ts swallows errors and still returns success",
+      "passed": true,
+      "evidence": "C3: 'catch (err) {} swallows all errors and returns 200; Stripe won't retry, no log'"
+    },
+    {
+      "text": "Identifies that the Stripe webhook handler does not verify the webhook signature before trusting the event",
+      "passed": true,
+      "evidence": "C3 Critical 'Stripe webhook does not verify signature', fix with constructEvent"
+    },
+    {
+      "text": "Identifies that app/api/users/route.ts returns full user records (e.g. password hashes / sensitive fields) instead of selecting safe fields",
+      "passed": true,
+      "evidence": "H2 High findMany without select and spread exposes passwordHash etc."
+    },
+    {
+      "text": "Mentions the use of the any type in app/api/users/route.ts as a type-safety issue",
+      "passed": true,
+      "evidence": "H2: 'u: any also prevents TypeScript from catching this'"
+    },
+    {
+      "text": "Identifies that app/api/checkout/route.ts uses the client-supplied item price instead of the product price from the database",
+      "passed": true,
+      "evidence": "C2 Critical subtotal uses item.price from request body instead of product.price from DB"
+    },
+    {
+      "text": "Identifies that pricing/shipping/VAT business logic lives inside the checkout route handler and should be moved to a service/domain layer",
+      "passed": false,
+      "evidence": "M2 only says move 1000/50/0.07 to named constants/config and add unit tests; does not say the pricing/shipping/VAT logic should move out of the route into a service/domain layer"
+    },
+    {
+      "text": "Identifies the N+1 query pattern (findUnique inside a loop) in app/api/checkout/route.ts",
+      "passed": true,
+      "evidence": "M4 Medium 'N+1 query in checkout' checkout/route.ts:19-20, use findMany"
+    },
+    {
+      "text": "Does NOT report rendering {review.body} as JSX text in the product page as an XSS vulnerability",
+      "passed": true,
+      "evidence": "review.body not flagged; no XSS claim on JSX text"
+    },
+    {
+      "text": "Does NOT report the $queryRaw tagged template in app/api/reviews/route.ts as SQL injection",
+      "passed": true,
+      "evidence": "Praised: '$queryRaw tagged template (parameterized)'"
+    },
+    {
+      "text": "Does NOT report process.env.STRIPE_SECRET_KEY used in the server-side app/api/reviews/route.ts as a secret exposed to the client",
+      "passed": true,
+      "evidence": "M6 only suggests relocating server-side new Stripe(process.env.STRIPE_SECRET_KEY!) to lib/stripe.ts; no client-exposure claim"
+    },
+    {
+      "text": "Does NOT report createReview in app/actions/review.ts as missing authentication or input validation",
+      "passed": true,
+      "evidence": "createReview praised for auth+zod; L3/M5 raise duplicate reviews/revalidatePath, not missing auth or input validation"
+    },
+    {
+      "text": "Every finding in code-review-report.md cites a file path with a line number or line range",
+      "passed": false,
+      "evidence": "C3 (webhooks/stripe/route.ts), C4 (profile.ts), C7 (package.json), L3-L6 cite no line numbers"
+    },
+    {
+      "text": "Every finding in code-review-report.md is assigned an explicit severity level (Critical/High/Medium/Low or equivalent)",
+      "passed": true,
+      "evidence": "Every finding sits under a Critical/High/Medium/Low section with an ID"
+    },
+    {
+      "text": "Every finding rated Critical or High in code-review-report.md includes a concrete code fix, not only a prose suggestion",
+      "passed": false,
+      "evidence": "Several Critical/High findings only have prose fixes: C4, C5, C7, H1, H3, H4"
+    },
+    {
+      "text": "code-review-report.md ends with or contains an explicit merge/deploy verdict (e.g. Block, Approve with changes, Approve)",
+      "passed": true,
+      "evidence": "'ยังไม่ควร merge เข้า main' (do not merge) plus fix order before merge"
+    }
+  ],
+  "summary": {
+    "passed": 18,
+    "failed": 3,
+    "total": 21,
+    "pass_rate": 0.857
+  },
+  "line_accuracy": {
+    "correct": 18,
+    "total": 18
+  },
+  "extra_false_positives": [],
+  "findings_total": 25,
+  "severity_counts": {
+    "Critical": 7,
+    "High": 5,
+    "Medium": 7,
+    "Low": 6
+  }
+}

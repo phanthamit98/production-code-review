@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: review-dotnet-inventory
+context:
+  scaffold_script: place-files.sh
+expected_outcome: |
+  A review report of the InventoryApi that finds the 12 planted issues (auth middleware order, hardcoded JWT key, FromSqlRaw SQL injection, business logic in controller, order IDOR, .Result blocking, user over-posting, password hash exposure, swallowed exception, async void, whole-table load, HttpClient per call) without flagging the 4 safe decoys, in a structured format with locations, severities, fixes and a verdict.

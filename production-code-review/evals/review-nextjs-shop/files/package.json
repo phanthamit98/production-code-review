@@ -1,0 +1,15 @@
+{
+  "name": "shop-admin",
+  "private": true,
+  "scripts": { "dev": "next dev", "build": "next build" },
+  "dependencies": {
+    "next": "15.1.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "@prisma/client": "6.1.0",
+    "next-auth": "5.0.0-beta.25",
+    "stripe": "17.4.0",
+    "zod": "3.24.1"
+  },
+  "devDependencies": { "typescript": "5.7.2", "prisma": "6.1.0" }
+}
